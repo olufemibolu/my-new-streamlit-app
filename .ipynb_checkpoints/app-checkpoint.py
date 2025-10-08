@@ -124,10 +124,26 @@ def current_bucket_label(today: Optional[pd.Timestamp] = None) -> Optional[str]:
 # =========================
 # Google Sheets (Streamlit secrets)
 # =========================
+
+import json
+import streamlit as st
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from gspread_dataframe import get_as_dataframe
+import pandas as pd
+
+
 @st.cache_data(show_spinner=True)
 def load_sheet_to_df(sheet_url: str, tab_name: str) -> pd.DataFrame:
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_dict = st.secrets["GOOGLE_CREDS"]  # secret is a JSON object
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+
+    # ✅ Fix: parse JSON string from Streamlit secrets
+    raw = st.secrets["GOOGLE_CREDS"]
+    creds_dict = json.loads(raw) if isinstance(raw, str) else dict(raw)
+
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     ws = client.open_by_url(sheet_url).worksheet(tab_name)
