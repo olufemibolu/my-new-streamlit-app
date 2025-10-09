@@ -245,17 +245,15 @@ def main():
     BUDGET_TAB  = "Sheet6"
 
     # 🔁 Auto + Manual refresh
-from streamlit_autorefresh import st_autorefresh
+    from streamlit_autorefresh import st_autorefresh
+    st_autorefresh(interval=600_000, key="auto_refresh")  # auto every 10 min
 
-st_autorefresh(interval=600_000, key="auto_refresh")  # auto every 10 min
-
-if st.button("🔄 Refresh data now"):
-    st.cache_data.clear()
-    try:
-        st.rerun()  # new method
-    except AttributeError:
-        st.experimental_rerun()  # fallback for older versions
-
+    if st.button("🔄 Refresh data now"):
+        st.cache_data.clear()
+        try:
+            st.rerun()  # new method
+        except AttributeError:
+            st.experimental_rerun()  # fallback for older versions
 
     with st.spinner("Loading Google Sheets…"):
         sum_exp = load_sheet_to_df(SUM_EXP_URL, SUM_EXP_TAB)
@@ -270,11 +268,19 @@ if st.button("🔄 Refresh data now"):
 
     # Default month = current bucket (falls back to first month if not found)
     default_label = current_bucket_label()
-    month_options = sorted(report_tidy['Month'].unique(), key=lambda x: pd.to_datetime(x, format='%b%Y'))
+    month_options = sorted(
+        report_tidy['Month'].unique(),
+        key=lambda x: pd.to_datetime(x, format='%b%Y')
+    )
     if default_label not in month_options and month_options:
         default_label = month_options[-1]  # latest month in data
 
-    selected_month = st.selectbox("Select month", month_options, index=month_options.index(default_label) if default_label in month_options else 0)
+    selected_month = st.selectbox(
+        "Select month",
+        month_options,
+        index=month_options.index(default_label)
+        if default_label in month_options else 0
+    )
 
     # Chart
     fig = make_grouped_bar_figure(report_tidy, selected_month)
@@ -289,13 +295,19 @@ if st.button("🔄 Refresh data now"):
         report_tidy[report_tidy['Month'] == selected_month]
         .set_index('Category')
         .reindex(CAT_ORDER)
-        .assign(Pct_Used=lambda d: (d['Pct_Used']*100).round(1))
-        .rename(columns={'Pct_Used':'Pct_Used (%)'})
+        .assign(Pct_Used=lambda d: (d['Pct_Used'] * 100).round(1))
+        .rename(columns={'Pct_Used': 'Pct_Used (%)'})
     )
 
     # Download CSV
     csv = report_tidy.to_csv(index=False).encode('utf-8')
-    st.download_button("Download full report CSV", data=csv, file_name="budget_vs_actual_report.csv", mime="text/csv")
+    st.download_button(
+        "Download full report CSV",
+        data=csv,
+        file_name="budget_vs_actual_report.csv",
+        mime="text/csv"
+    )
+
 
 if __name__ == "__main__":
     main()
