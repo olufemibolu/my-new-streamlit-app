@@ -245,11 +245,17 @@ def main():
     BUDGET_TAB  = "Sheet6"
 
     # 🔁 Auto + Manual refresh
-    from streamlit_autorefresh import st_autorefresh
-    st_autorefresh(interval=600_000, key="auto_refresh")  # auto every 10 min
-    if st.button("🔄 Refresh data now"):
-        st.cache_data.clear()
-        st.experimental_rerun()
+from streamlit_autorefresh import st_autorefresh
+
+st_autorefresh(interval=600_000, key="auto_refresh")  # auto every 10 min
+
+if st.button("🔄 Refresh data now"):
+    st.cache_data.clear()
+    try:
+        st.rerun()  # new method
+    except AttributeError:
+        st.experimental_rerun()  # fallback for older versions
+
 
     with st.spinner("Loading Google Sheets…"):
         sum_exp = load_sheet_to_df(SUM_EXP_URL, SUM_EXP_TAB)
