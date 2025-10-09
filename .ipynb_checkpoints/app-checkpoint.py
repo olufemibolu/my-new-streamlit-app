@@ -225,7 +225,7 @@ def make_grouped_bar_figure(report_tidy: pd.DataFrame, month_label: str) -> Opti
 
     ax.set_xticks(x)
     ax.set_xticklabels(CAT_ORDER, rotation=20, ha='right')
-    ax.set_ylabel('Amount ($)')
+    ax.set_ylabel('Amount ($)') 
     ax.set_title(f'Budget vs Actual — {month_label}')
     ax.legend()
     fig.tight_layout()
@@ -243,6 +243,13 @@ def main():
     SUM_EXP_TAB = "Sheet14"
     BUDGET_URL  = "https://docs.google.com/spreadsheets/d/1t4a-OWpHNNiwkxPw-bH-71CUO512li1P9wVME2KQqQI"
     BUDGET_TAB  = "Sheet6"
+
+    # 🔁 Auto + Manual refresh
+    from streamlit_autorefresh import st_autorefresh
+    st_autorefresh(interval=600_000, key="auto_refresh")  # auto every 10 min
+    if st.button("🔄 Refresh data now"):
+        st.cache_data.clear()
+        st.experimental_rerun()
 
     with st.spinner("Loading Google Sheets…"):
         sum_exp = load_sheet_to_df(SUM_EXP_URL, SUM_EXP_TAB)
